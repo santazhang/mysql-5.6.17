@@ -14,16 +14,16 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 /**
-  @file ha_example.cc
+  @file ha_memdb.cc
 
   @brief
-  The ha_example engine is a stubbed storage engine for example purposes only;
+  The ha_memdb engine is a stubbed storage engine for example purposes only;
   it does nothing at this point. Its purpose is to provide a source
   code illustration of how to begin writing new storage engines; see also
-  /storage/example/ha_example.h.
+  /storage/example/ha_memdb.h.
 
   @details
-  ha_example will let you create/open/delete tables, but
+  ha_memdb will let you create/open/delete tables, but
   nothing further (for example, indexes are not supported nor can data
   be stored in the table). Use this example as a template for
   implementing the same functionality in your own storage engine. You
@@ -40,7 +40,7 @@
   example handler object will be able to see when it is using that
   table.
 
-  Please read the object definition in ha_example.h before reading the rest
+  Please read the object definition in ha_memdb.h before reading the rest
   of this file.
 
   @note
@@ -51,33 +51,33 @@
   table:
 
   @code
-  ha_example::store_lock
-  ha_example::external_lock
-  ha_example::info
-  ha_example::rnd_init
-  ha_example::extra
+  ha_memdb::store_lock
+  ha_memdb::external_lock
+  ha_memdb::info
+  ha_memdb::rnd_init
+  ha_memdb::extra
   ENUM HA_EXTRA_CACHE        Cache record in HA_rrnd()
-  ha_example::rnd_next
-  ha_example::rnd_next
-  ha_example::rnd_next
-  ha_example::rnd_next
-  ha_example::rnd_next
-  ha_example::rnd_next
-  ha_example::rnd_next
-  ha_example::rnd_next
-  ha_example::rnd_next
-  ha_example::extra
+  ha_memdb::rnd_next
+  ha_memdb::rnd_next
+  ha_memdb::rnd_next
+  ha_memdb::rnd_next
+  ha_memdb::rnd_next
+  ha_memdb::rnd_next
+  ha_memdb::rnd_next
+  ha_memdb::rnd_next
+  ha_memdb::rnd_next
+  ha_memdb::extra
   ENUM HA_EXTRA_NO_CACHE     End caching of records (def)
-  ha_example::external_lock
-  ha_example::extra
+  ha_memdb::external_lock
+  ha_memdb::extra
   ENUM HA_EXTRA_RESET        Reset database to after open
   @endcode
 
   Here you see that the example storage engine has 9 rows called before
   rnd_next signals that it has reached the end of its data. Also note that
   the table in question was already opened; had it not been open, a call to
-  ha_example::open() would also have been necessary. Calls to
-  ha_example::extra() are hints as to what will be occuring to the request.
+  ha_memdb::open() would also have been necessary. Calls to
+  ha_memdb::extra() are hints as to what will be occuring to the request.
 
   A Longer Example can be found called the "Skeleton Engine" which can be 
   found on TangentOrg. It has both an engine and a full build environment
@@ -105,11 +105,11 @@ static bool example_is_supported_system_table(const char *db,
                                       const char *table_name,
                                       bool is_sql_layer_system_table);
 #ifdef HAVE_PSI_INTERFACE
-static PSI_mutex_key ex_key_mutex_Example_share_mutex;
+static PSI_mutex_key ex_key_mutex_Memdb_share_mutex;
 
 static PSI_mutex_info all_example_mutexes[]=
 {
-  { &ex_key_mutex_Example_share_mutex, "Example_share::mutex", 0}
+  { &ex_key_mutex_Memdb_share_mutex, "Memdb_share::mutex", 0}
 };
 
 static void init_example_psi_keys()
@@ -122,10 +122,10 @@ static void init_example_psi_keys()
 }
 #endif
 
-Example_share::Example_share()
+Memdb_share::Memdb_share()
 {
   thr_lock_init(&lock);
-  mysql_mutex_init(ex_key_mutex_Example_share_mutex,
+  mysql_mutex_init(ex_key_mutex_Memdb_share_mutex,
                    &mutex, MY_MUTEX_INIT_FAST);
 }
 
@@ -157,16 +157,16 @@ static int example_init_func(void *p)
   they are needed to function.
 */
 
-Example_share *ha_example::get_share()
+Memdb_share *ha_memdb::get_share()
 {
-  Example_share *tmp_share;
+  Memdb_share *tmp_share;
 
-  DBUG_ENTER("ha_example::get_share()");
+  DBUG_ENTER("ha_memdb::get_share()");
 
   lock_shared_ha_data();
-  if (!(tmp_share= static_cast<Example_share*>(get_ha_share_ptr())))
+  if (!(tmp_share= static_cast<Memdb_share*>(get_ha_share_ptr())))
   {
-    tmp_share= new Example_share;
+    tmp_share= new Memdb_share;
     if (!tmp_share)
       goto err;
 
@@ -182,10 +182,10 @@ static handler* example_create_handler(handlerton *hton,
                                        TABLE_SHARE *table, 
                                        MEM_ROOT *mem_root)
 {
-  return new (mem_root) ha_example(hton, table);
+  return new (mem_root) ha_memdb(hton, table);
 }
 
-ha_example::ha_example(handlerton *hton, TABLE_SHARE *table_arg)
+ha_memdb::ha_memdb(handlerton *hton, TABLE_SHARE *table_arg)
   :handler(hton, table_arg)
 {}
 
@@ -208,13 +208,13 @@ ha_example::ha_example(handlerton *hton, TABLE_SHARE *table_arg)
   delete_table method in handler.cc
 */
 
-static const char *ha_example_exts[] = {
+static const char *ha_memdb_exts[] = {
   NullS
 };
 
-const char **ha_example::bas_ext() const
+const char **ha_memdb::bas_ext() const
 {
-  return ha_example_exts;
+  return ha_memdb_exts;
 }
 
 /*
@@ -222,10 +222,10 @@ const char **ha_example::bas_ext() const
   system database specific to SE. This interface
   is optional, so every SE need not implement it.
 */
-const char* ha_example_system_database= NULL;
+const char* ha_memdb_system_database= NULL;
 const char* example_system_database()
 {
-  return ha_example_system_database;
+  return ha_memdb_system_database;
 }
 
 /*
@@ -237,7 +237,7 @@ const char* example_system_database()
 
   This array is optional, so every SE need not implement it.
 */
-static st_system_tablename ha_example_system_tables[]= {
+static st_system_tablename ha_memdb_system_tables[]= {
   {(const char*)NULL, (const char*)NULL}
 };
 
@@ -264,7 +264,7 @@ static bool example_is_supported_system_table(const char *db,
     return false;
 
   // Check if this is SE layer system tables
-  systab= ha_example_system_tables;
+  systab= ha_memdb_system_tables;
   while (systab && systab->db)
   {
     if (systab->db == db &&
@@ -293,9 +293,9 @@ static bool example_is_supported_system_table(const char *db,
   handler::ha_open() in handler.cc
 */
 
-int ha_example::open(const char *name, int mode, uint test_if_locked)
+int ha_memdb::open(const char *name, int mode, uint test_if_locked)
 {
-  DBUG_ENTER("ha_example::open");
+  DBUG_ENTER("ha_memdb::open");
 
   if (!(share = get_share()))
     DBUG_RETURN(1);
@@ -320,9 +320,9 @@ int ha_example::open(const char *name, int mode, uint test_if_locked)
   sql_base.cc, sql_select.cc and table.cc
 */
 
-int ha_example::close(void)
+int ha_memdb::close(void)
 {
-  DBUG_ENTER("ha_example::close");
+  DBUG_ENTER("ha_memdb::close");
   DBUG_RETURN(0);
 }
 
@@ -357,9 +357,9 @@ int ha_example::close(void)
   sql_insert.cc, sql_select.cc, sql_table.cc, sql_udf.cc and sql_update.cc
 */
 
-int ha_example::write_row(uchar *buf)
+int ha_memdb::write_row(uchar *buf)
 {
-  DBUG_ENTER("ha_example::write_row");
+  DBUG_ENTER("ha_memdb::write_row");
   /*
     Example of a successful write_row. We don't store the data
     anywhere; they are thrown away. A real implementation will
@@ -393,10 +393,10 @@ int ha_example::write_row(uchar *buf)
   @see
   sql_select.cc, sql_acl.cc, sql_update.cc and sql_insert.cc
 */
-int ha_example::update_row(const uchar *old_data, uchar *new_data)
+int ha_memdb::update_row(const uchar *old_data, uchar *new_data)
 {
 
-  DBUG_ENTER("ha_example::update_row");
+  DBUG_ENTER("ha_memdb::update_row");
   DBUG_RETURN(HA_ERR_WRONG_COMMAND);
 }
 
@@ -421,9 +421,9 @@ int ha_example::update_row(const uchar *old_data, uchar *new_data)
   sql_acl.cc, sql_udf.cc, sql_delete.cc, sql_insert.cc and sql_select.cc
 */
 
-int ha_example::delete_row(const uchar *buf)
+int ha_memdb::delete_row(const uchar *buf)
 {
-  DBUG_ENTER("ha_example::delete_row");
+  DBUG_ENTER("ha_memdb::delete_row");
   DBUG_RETURN(HA_ERR_WRONG_COMMAND);
 }
 
@@ -435,13 +435,13 @@ int ha_example::delete_row(const uchar *buf)
   index.
 */
 
-int ha_example::index_read_map(uchar *buf, const uchar *key,
+int ha_memdb::index_read_map(uchar *buf, const uchar *key,
                                key_part_map keypart_map __attribute__((unused)),
                                enum ha_rkey_function find_flag
                                __attribute__((unused)))
 {
   int rc;
-  DBUG_ENTER("ha_example::index_read");
+  DBUG_ENTER("ha_memdb::index_read");
   MYSQL_INDEX_READ_ROW_START(table_share->db.str, table_share->table_name.str);
   rc= HA_ERR_WRONG_COMMAND;
   MYSQL_INDEX_READ_ROW_DONE(rc);
@@ -454,10 +454,10 @@ int ha_example::index_read_map(uchar *buf, const uchar *key,
   Used to read forward through the index.
 */
 
-int ha_example::index_next(uchar *buf)
+int ha_memdb::index_next(uchar *buf)
 {
   int rc;
-  DBUG_ENTER("ha_example::index_next");
+  DBUG_ENTER("ha_memdb::index_next");
   MYSQL_INDEX_READ_ROW_START(table_share->db.str, table_share->table_name.str);
   rc= HA_ERR_WRONG_COMMAND;
   MYSQL_INDEX_READ_ROW_DONE(rc);
@@ -470,10 +470,10 @@ int ha_example::index_next(uchar *buf)
   Used to read backwards through the index.
 */
 
-int ha_example::index_prev(uchar *buf)
+int ha_memdb::index_prev(uchar *buf)
 {
   int rc;
-  DBUG_ENTER("ha_example::index_prev");
+  DBUG_ENTER("ha_memdb::index_prev");
   MYSQL_INDEX_READ_ROW_START(table_share->db.str, table_share->table_name.str);
   rc= HA_ERR_WRONG_COMMAND;
   MYSQL_INDEX_READ_ROW_DONE(rc);
@@ -491,10 +491,10 @@ int ha_example::index_prev(uchar *buf)
   @see
   opt_range.cc, opt_sum.cc, sql_handler.cc and sql_select.cc
 */
-int ha_example::index_first(uchar *buf)
+int ha_memdb::index_first(uchar *buf)
 {
   int rc;
-  DBUG_ENTER("ha_example::index_first");
+  DBUG_ENTER("ha_memdb::index_first");
   MYSQL_INDEX_READ_ROW_START(table_share->db.str, table_share->table_name.str);
   rc= HA_ERR_WRONG_COMMAND;
   MYSQL_INDEX_READ_ROW_DONE(rc);
@@ -512,10 +512,10 @@ int ha_example::index_first(uchar *buf)
   @see
   opt_range.cc, opt_sum.cc, sql_handler.cc and sql_select.cc
 */
-int ha_example::index_last(uchar *buf)
+int ha_memdb::index_last(uchar *buf)
 {
   int rc;
-  DBUG_ENTER("ha_example::index_last");
+  DBUG_ENTER("ha_memdb::index_last");
   MYSQL_INDEX_READ_ROW_START(table_share->db.str, table_share->table_name.str);
   rc= HA_ERR_WRONG_COMMAND;
   MYSQL_INDEX_READ_ROW_DONE(rc);
@@ -536,15 +536,15 @@ int ha_example::index_last(uchar *buf)
   @see
   filesort.cc, records.cc, sql_handler.cc, sql_select.cc, sql_table.cc and sql_update.cc
 */
-int ha_example::rnd_init(bool scan)
+int ha_memdb::rnd_init(bool scan)
 {
-  DBUG_ENTER("ha_example::rnd_init");
+  DBUG_ENTER("ha_memdb::rnd_init");
   DBUG_RETURN(0);
 }
 
-int ha_example::rnd_end()
+int ha_memdb::rnd_end()
 {
-  DBUG_ENTER("ha_example::rnd_end");
+  DBUG_ENTER("ha_memdb::rnd_end");
   DBUG_RETURN(0);
 }
 
@@ -563,10 +563,10 @@ int ha_example::rnd_end()
   @see
   filesort.cc, records.cc, sql_handler.cc, sql_select.cc, sql_table.cc and sql_update.cc
 */
-int ha_example::rnd_next(uchar *buf)
+int ha_memdb::rnd_next(uchar *buf)
 {
   int rc;
-  DBUG_ENTER("ha_example::rnd_next");
+  DBUG_ENTER("ha_memdb::rnd_next");
   MYSQL_READ_ROW_START(table_share->db.str, table_share->table_name.str,
                        TRUE);
   rc= HA_ERR_END_OF_FILE;
@@ -596,9 +596,9 @@ int ha_example::rnd_next(uchar *buf)
   @see
   filesort.cc, sql_select.cc, sql_delete.cc and sql_update.cc
 */
-void ha_example::position(const uchar *record)
+void ha_memdb::position(const uchar *record)
 {
-  DBUG_ENTER("ha_example::position");
+  DBUG_ENTER("ha_memdb::position");
   DBUG_VOID_RETURN;
 }
 
@@ -616,10 +616,10 @@ void ha_example::position(const uchar *record)
   @see
   filesort.cc, records.cc, sql_insert.cc, sql_select.cc and sql_update.cc
 */
-int ha_example::rnd_pos(uchar *buf, uchar *pos)
+int ha_memdb::rnd_pos(uchar *buf, uchar *pos)
 {
   int rc;
-  DBUG_ENTER("ha_example::rnd_pos");
+  DBUG_ENTER("ha_memdb::rnd_pos");
   MYSQL_READ_ROW_START(table_share->db.str, table_share->table_name.str,
                        TRUE);
   rc= HA_ERR_WRONG_COMMAND;
@@ -666,9 +666,9 @@ int ha_example::rnd_pos(uchar *buf, uchar *pos)
   sql_select.cc, sql_show.cc, sql_show.cc, sql_show.cc, sql_show.cc, sql_table.cc,
   sql_union.cc and sql_update.cc
 */
-int ha_example::info(uint flag)
+int ha_memdb::info(uint flag)
 {
-  DBUG_ENTER("ha_example::info");
+  DBUG_ENTER("ha_memdb::info");
   DBUG_RETURN(0);
 }
 
@@ -682,9 +682,9 @@ int ha_example::info(uint flag)
     @see
   ha_innodb.cc
 */
-int ha_example::extra(enum ha_extra_function operation)
+int ha_memdb::extra(enum ha_extra_function operation)
 {
-  DBUG_ENTER("ha_example::extra");
+  DBUG_ENTER("ha_memdb::extra");
   DBUG_RETURN(0);
 }
 
@@ -708,9 +708,9 @@ int ha_example::extra(enum ha_extra_function operation)
   JOIN::reinit() in sql_select.cc and
   st_select_lex_unit::exec() in sql_union.cc.
 */
-int ha_example::delete_all_rows()
+int ha_memdb::delete_all_rows()
 {
-  DBUG_ENTER("ha_example::delete_all_rows");
+  DBUG_ENTER("ha_memdb::delete_all_rows");
   DBUG_RETURN(HA_ERR_WRONG_COMMAND);
 }
 
@@ -731,9 +731,9 @@ int ha_example::delete_all_rows()
   Truncate_statement in sql_truncate.cc
   Remarks in handler::truncate.
 */
-int ha_example::truncate()
+int ha_memdb::truncate()
 {
-  DBUG_ENTER("ha_example::truncate");
+  DBUG_ENTER("ha_memdb::truncate");
   DBUG_RETURN(HA_ERR_WRONG_COMMAND);
 }
 
@@ -755,9 +755,9 @@ int ha_example::truncate()
   the section "locking functions for mysql" in lock.cc;
   copy_data_between_tables() in sql_table.cc.
 */
-int ha_example::external_lock(THD *thd, int lock_type)
+int ha_memdb::external_lock(THD *thd, int lock_type)
 {
-  DBUG_ENTER("ha_example::external_lock");
+  DBUG_ENTER("ha_memdb::external_lock");
   DBUG_RETURN(0);
 }
 
@@ -799,7 +799,7 @@ int ha_example::external_lock(THD *thd, int lock_type)
   @see
   get_lock_data() in lock.cc
 */
-THR_LOCK_DATA **ha_example::store_lock(THD *thd,
+THR_LOCK_DATA **ha_memdb::store_lock(THD *thd,
                                        THR_LOCK_DATA **to,
                                        enum thr_lock_type lock_type)
 {
@@ -829,9 +829,9 @@ THR_LOCK_DATA **ha_example::store_lock(THD *thd,
   @see
   delete_table and ha_create_table() in handler.cc
 */
-int ha_example::delete_table(const char *name)
+int ha_memdb::delete_table(const char *name)
 {
-  DBUG_ENTER("ha_example::delete_table");
+  DBUG_ENTER("ha_memdb::delete_table");
   /* This is not implemented but we want someone to be able that it works. */
   DBUG_RETURN(0);
 }
@@ -851,9 +851,9 @@ int ha_example::delete_table(const char *name)
   @see
   mysql_rename_table() in sql_table.cc
 */
-int ha_example::rename_table(const char * from, const char * to)
+int ha_memdb::rename_table(const char * from, const char * to)
 {
-  DBUG_ENTER("ha_example::rename_table ");
+  DBUG_ENTER("ha_memdb::rename_table ");
   DBUG_RETURN(HA_ERR_WRONG_COMMAND);
 }
 
@@ -871,10 +871,10 @@ int ha_example::rename_table(const char * from, const char * to)
   @see
   check_quick_keys() in opt_range.cc
 */
-ha_rows ha_example::records_in_range(uint inx, key_range *min_key,
+ha_rows ha_memdb::records_in_range(uint inx, key_range *min_key,
                                      key_range *max_key)
 {
-  DBUG_ENTER("ha_example::records_in_range");
+  DBUG_ENTER("ha_memdb::records_in_range");
   DBUG_RETURN(10);                         // low number to force index usage
 }
 
@@ -898,10 +898,10 @@ ha_rows ha_example::records_in_range(uint inx, key_range *min_key,
   ha_create_table() in handle.cc
 */
 
-int ha_example::create(const char *name, TABLE *table_arg,
+int ha_memdb::create(const char *name, TABLE *table_arg,
                        HA_CREATE_INFO *create_info)
 {
-  DBUG_ENTER("ha_example::create");
+  DBUG_ENTER("ha_memdb::create");
   /*
     This is not implemented but we want someone to be able to see that it
     works.
