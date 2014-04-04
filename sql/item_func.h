@@ -16,6 +16,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
+#include <cmath>
 
 /* Function items used by mysql */
 
@@ -228,7 +229,7 @@ public:
                      void * arg, traverse_order order);
   inline double fix_result(double value)
   {
-    if (isfinite(value))
+    if (std::isfinite(value))
       return value;
     null_value=1;
     return 0.0;
@@ -262,7 +263,7 @@ public:
   */
   inline double check_float_overflow(double value)
   {
-    return isfinite(value) ? value : raise_float_overflow();
+    return std::isfinite(value) ? value : raise_float_overflow();
   }
   /**
     Throw an error if the input BIGINT value represented by the
