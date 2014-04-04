@@ -38,6 +38,7 @@
 #include "log_event.h"                   // class Table_map_log_event
 #include <m_ctype.h>
 #include <errno.h>
+#include <cmath>
 #include "sql_join_buffer.h"             // CACHE_FIELD
 
 using std::max;
@@ -2348,7 +2349,7 @@ type_conversion_status Field_decimal::store(double nr)
     return TYPE_WARN_OUT_OF_RANGE;
   }
   
-  if (!isfinite(nr)) // Handle infinity as special case
+  if (!std::isfinite(nr)) // Handle infinity as special case
   {
     overflow(nr < 0.0);
     return TYPE_WARN_OUT_OF_RANGE;
